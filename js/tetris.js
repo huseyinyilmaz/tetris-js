@@ -1,5 +1,4 @@
 "use strict";
-
 var gameManager = function(){
 	/////////////////
     // ELEMENTS	   //
@@ -29,9 +28,16 @@ var gameManager = function(){
 	// XXX
 	elements.push({
 					  color:'#ff0',
-					  cubes:[{x:0,y:0},{x:1,y:0},{x:2,y:0},{x:0,y:1}]
+					  cubes:[{x:0,y:0},{x:1,y:0},{x:-1,y:0},{x:-1,y:1}]
 				  });
 
+	//   X
+	// XXX
+	elements.push({
+					  color:'#fff',
+					  cubes:[{x:0,y:0},{x:1,y:0},{x:-1,y:0},{x:1,y:1}]
+	
+				  });
 	//  XX
 	// XX
 	elements.push({
@@ -53,16 +59,17 @@ var gameManager = function(){
 	var pieceProto = {
 	};
 
-
 	var cubeProto = {
+		emptyCubeColor:"#000",
 		put:function(c){
 			//if there is no color defined remove cube
 			if(typeof(c) === 'undefined'){
-				c="#000";
+				c=this.emptyCubeColor;
 				this.empty = true;
 			}else{
 				this.empty = false;
 			}
+			this.color=c;
 			this.cube.attr('fill',c);
 		}
 	};
@@ -73,7 +80,8 @@ var gameManager = function(){
 		height: 700,
 		cubeDimantion:30,//dimention of every piece.
 		arenaSize:14,//arena size in cube count
-
+		previewArenaSize:5,
+		previewArenaHeight:5,
 		//Draw base of the gaming arena
 		drawBase:function(){
 			var paper = this.paper;
@@ -85,15 +93,47 @@ var gameManager = function(){
 			var cover2 = paper.rect(arenaWidth+10,5,this.width-arenaWidth-15,this.height-10);
 			cover2.attr("stroke","#fff");
 		},
+		//removes complated rows and rerenders the board
+		render:function(){
+			var arena = this.arena;
+			var newArena = arena.filter(function(row){return row.some(function(x){return x.empty;});});
+			for(var i=0;i<newArena.length;i++){
+				var valRow = newArena[i];
+				var row = arena[i];
+				for(var j=0;j<row.length;j++){
+					var valCube=valRow[j];
+					var cube=row[j];
+					if (valCube.empty)
+						cube.put();
+					else
+						cube.put(valCube.color);
+				}
+			}
+			//empty remaining places
+			for(i=newArena.length;i<arena.length;i++)
+				arena[i].forEach(function(x){x.put();});
+
+		},
 		//process one turn of the game
 		turn:function(){
 			if(!this.movePiece(0,-1))
 				this.enterPiece();
 		},
+		//chooses next piece and returns old one back
 		chooseNewNextPiece:function(){
 			var index = Math.floor(Math.random()*elements.length);
 			var e = this.next_piece;
+			var previewArena = this.previewArena;
+			if(e != null)
+				e.cubes.forEach(function(x){
+									previewArena[x.y+2][x.x+2].put();
+								});
 			this.next_piece = elements[index];
+			var color = this.next_piece.color;
+			this.next_piece.cubes.forEach(function(x){
+											  console.log(x.color);
+											  previewArena[x.y+2][x.x+2].put(color);
+										  });
 			return e;
 		},
 		//stops current piece and enters the new piece to game arena
@@ -103,13 +143,15 @@ var gameManager = function(){
 						 cubes:e.cubes.map(function(i){return {x:i.x+7, y:i.y+23};})};
 			piece.__proto__ = pieceProto;
 			current.current_piece = piece;
+			this.render();
 		},
 		placePiece:function(newCubes){
 			var piece = this.current_piece;
 			var orgCubes = piece.cubes;
 			var arena = current.arena;
+			var arenaSize = current.arenaSize;
 			var result;
-			if (newCubes.every(function(i){return (i.y>=0 && i.x>=0 && i.x<14)  
+			if (newCubes.every(function(i){return (i.y>=0 && i.x>=0 && i.x<arenaSize)  
 										       && (   i.y>=23 || arena[i.y][i.x].empty
 												   || orgCubes.some(function(j){
 																		 return i.x === j.x && i.y === j.y;
@@ -137,7 +179,6 @@ var gameManager = function(){
 			var newCubes = this.current_piece.cubes.map(function(i){return {x:i.x+x,y:i.y+y};});
 			return this.placePiece(newCubes);
 		},
-
 		//start game
 		start:function(){
 			this.chooseNewNextPiece();
@@ -159,8 +200,6 @@ var gameManager = function(){
 										 return {x:(i.y-defaulty)+defaultx,y:(-(i.x-defaultx)+defaulty)};
 									 });
 			this.placePiece(newCubes);
-			
-			console.log('rotate');
 		},
 		moveDown:function(){
 			this.turn();
@@ -181,23 +220,47 @@ var gameManager = function(){
 				next_piece:null
 			};
 			current = game;
-			//Create game arene blocks
+			//Create game arena blocks
 			var dim = gameProto.cubeDimantion;
+			var arenaSize = gameProto.arenaSize;
 			var arena = [];
 			var indexStart = gameProto.height-5-dim;
 			for(var i = 0;i<23;i++){//height
 				var row = [];
-				for(var j = 0;j<gameProto.arenaSize;j++){
+				for(var j = 0;j<arenaSize;j++){
 					var cube ={empty:true,
-								cube:game.paper.rect(j*dim+5,indexStart-i*dim,dim,dim)
+							   color:null,
+							   cube:game.paper.rect(j*dim+5,indexStart-i*dim,dim,dim)
 							   };
 					cube.__proto__ = cubeProto;
 					row.push(cube);
 				};//inner for
 				arena.push(row);
-			};//auther for
+			};//outer for
 			//set newly created arena to game.arena
 			game.arena = arena;
+
+			//create preview arena blocks
+			var preview = [];
+			var previewx = dim*arenaSize + 15;
+			var previewArenaSize = gameProto.previewArenaSize;
+			var previewArenaHeight = gameProto.previewArenaHeight;
+			var previewIndexStart = 5 + dim*previewArenaHeight;
+			console.log(previewIndexStart);
+			console.log(previewx);
+			for(i=0;i<previewArenaHeight;i++){
+				var row = [];
+				for(var j=0;j<previewArenaSize;j++){
+					var cube = {empty:true,
+								color:null,
+								cube:game.paper.rect(j*dim+5+previewx,previewIndexStart-i*dim,dim,dim)
+							   };
+					cube.__proto__ = cubeProto;
+					row.push(cube);
+				}
+				preview.push(row);
+			}
+			game.previewArena = preview;
 			//set prototype of game object
 			game.__proto__ = gameProto;
 			game.drawBase();
@@ -224,4 +287,4 @@ window.onload = function() {
 									  break;
 								  }; },false);
 	game.start();
-}; 
+};
