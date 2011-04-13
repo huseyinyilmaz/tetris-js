@@ -48,11 +48,25 @@ var gameManager = function(){
 
 	//holds current game
 	var current = null;
+
 	//piece prototype
 	var pieceProto = {
 	};
 
-	
+
+	var cubeProto = {
+		put:function(c){
+			//if there is no color defined remove cube
+			if(typeof(c) === 'undefined'){
+				c="#000";
+				this.empty = true;
+			}else{
+				this.empty = false;
+			}
+			this.cube.attr('fill',c);
+		}
+	};
+
 	//prototype for the game
 	var gameProto = {
 		width: 600,
@@ -73,17 +87,8 @@ var gameManager = function(){
 		},
 		//process one turn of the game
 		turn:function(){
-			console.log("here");
-			this.current_piece.cubes = this.current_piece.cubes.map(function(i){ 
-																		if (i.y<23)
-																			current.arena[i.y][i.x].put();
-																		i.y--;
-																		if (i.y<23)
-																			current.arena[i.y][i.x].put(this.element.color);
-																		return i;
-																	},this.current_piece);
-			
-			
+			if(!this.movePiece(0,-1))
+				this.enterPiece();
 		},
 		chooseNewNextPiece:function(){
 			var index = Math.floor(Math.random()*elements.length);
@@ -99,31 +104,72 @@ var gameManager = function(){
 			piece.__proto__ = pieceProto;
 			current.current_piece = piece;
 		},
+		placePiece:function(newCubes){
+			var piece = this.current_piece;
+			var orgCubes = piece.cubes;
+			var arena = current.arena;
+			var result;
+			if (newCubes.every(function(i){return (i.y>=0 && i.x>=0 && i.x<14)  
+										       && (   i.y>=23 || arena[i.y][i.x].empty
+												   || orgCubes.some(function(j){
+																		 return i.x === j.x && i.y === j.y;
+																	 }));
+									   })){
+				//remove original cubes
+				orgCubes.forEach(function(i){
+									 if(i.y<23)
+										 arena[i.y][i.x].put();
+								 });
+				//place new cubes
+				newCubes.forEach(function(i){
+									 if (i.y<23)
+										 arena[i.y][i.x].put(piece.element.color);
+								 });
+				piece.cubes = newCubes;
+
+				result = true;
+			}else{
+				result = false;
+			}
+			return result;
+		},
+		movePiece:function(x,y){
+			var newCubes = this.current_piece.cubes.map(function(i){return {x:i.x+x,y:i.y+y};});
+			return this.placePiece(newCubes);
+		},
+
 		//start game
 		start:function(){
 			this.chooseNewNextPiece();
 			this.enterPiece();
 			gameManager.loop();
-		}//start
-
-	};
-
-	var cubeProto = {
-		put:function(c){
-			//if there is no color defined remove cube
-			if(typeof(c) === 'undefined'){
-				c="#000";
-				this.empty = true;
-			}else{
-				this.empty = false;
-			}
-			this.cube.attr('fill',c);
+		},//start
+		moveLeft:function(){
+			this.movePiece(-1,0);
+		},
+		moveRight:function(){
+			this.movePiece(1,0);
+		},
+		rotate:function(){
+			var piece = this.current_piece;
+			var cubes = piece.cubes;
+			var defaultx = cubes[0].x;
+			var defaulty = cubes[0].y;
+			var newCubes = cubes.map(function(i){
+										 return {x:(i.y-defaulty)+defaultx,y:(-(i.x-defaultx)+defaulty)};
+									 });
+			this.placePiece(newCubes);
+			
+			console.log('rotate');
+		},
+		moveDown:function(){
+			this.turn();
 		}
 	};
 
 	return {
 		loop:function(){
-			setTimeout("gameManager.loop()",1000);
+			setTimeout("gameManager.loop()",500);
 			current.turn();
 		},
 		initialize:function(element){
@@ -160,9 +206,22 @@ var gameManager = function(){
 	};//returned object
 }();
 
-
-window.onload = function() {  
+window.onload = function() {
 	var game = gameManager.initialize(document.getElementById('canvas_container'));
+	document.addEventListener('keydown',function(e){
+								  switch(e.keyCode){
+								  case 37://left arrow
+									  game.moveLeft();
+									  break;
+								  case 38://up arrow
+									  game.rotate();
+									  break;
+								  case 39://right arrow
+									  game.moveRight();
+									  break;
+								  case 40://down arrow
+									  game.moveDown();
+									  break;
+								  }; },false);
 	game.start();
-	console.log(game);
 }; 
