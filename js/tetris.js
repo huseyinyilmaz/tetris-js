@@ -140,6 +140,7 @@ var gameManager = function(){
         },
         //process one turn of the game
         turn:function(){
+			var result = true;
             if(!this.movePiece(0,-1)){
                 var piece = this.current_piece;
                 if(piece.cubes.some(function(x){return x.y>=23;})){
@@ -148,7 +149,9 @@ var gameManager = function(){
                 }else{
                     this.enterPiece();
                 }
+				result = false;
             }
+			return result;
         },
         //chooses next piece and returns old one back
         chooseNewNextPiece:function(){
@@ -248,8 +251,12 @@ var gameManager = function(){
         },
         //down arrow event handler
         moveDown:function(){
-            this.turn();
-        }
+			this.turn();
+        },
+		//enter event handler
+		moveAllDown:function(){
+            while(this.turn());
+		}
     };
 
     return {
@@ -328,7 +335,11 @@ window.onload = function() {
     var game = gameManager.initialize(document.getElementById('canvas_container'));
     //bind event handlers to ducument
     document.addEventListener('keydown',function(e){
+								  console.log(e.keyCode);
                                   switch(e.keyCode){
+								case 13://enter
+									  game.moveAllDown();
+									  break;
                                   case 37://left arrow
                                       game.moveLeft();
                                       break;
