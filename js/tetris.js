@@ -186,16 +186,31 @@ var gameManager = function(){
 																		 return i.x === j.x && i.y === j.y;
 																	 }));
 									   })){
-				//remove original cubes
-				orgCubes.forEach(function(i){
+
+				//cubes that needs to be removed
+				var rmCubes = orgCubes.filter(function(cube){
+												  return newCubes.every(function(x){
+																		   return !(x.x===cube.x && x.y ===cube.y);
+																	   });
+											  });
+				//cubes that needs to be added
+				var addCubes = newCubes.filter(function(cube){
+												  return orgCubes.every(function(x){
+																		   return !(x.x===cube.x && x.y ===cube.y);
+																	   });
+											  });
+				
+				//remove cubes
+				rmCubes.forEach(function(i){
 									 if(i.y<23)
 										 arena[i.y][i.x].put();
 								 });
-				//place new cubes
-				newCubes.forEach(function(i){
+				//add cubes
+				addCubes.forEach(function(i){
 									 if (i.y<23)
 										 arena[i.y][i.x].put(piece.element.color);
 								 });
+				
 				piece.cubes = newCubes;
 
 				result = true;
