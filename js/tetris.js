@@ -3,7 +3,8 @@ var gameManager = function(){
     /////////////////
     // ELEMENTS    //
     /////////////////
-    //First cube in the list is the turning point of the piece
+
+    //game piece types
     var elements = [];
 
     //  X
@@ -55,12 +56,11 @@ var gameManager = function(){
     //holds current game
     var current = null;
 
-    //piece prototype
-    var pieceProto = {
-    };
-
+    //prototype for cubes on the screen
     var cubeProto = {
         emptyCubeColor:"#000",
+
+        //refreshes the cube with given color
         put:function(c){
             //if there is no color defined remove cube
             if(typeof(c) === 'undefined'){
@@ -99,12 +99,12 @@ var gameManager = function(){
                                 "text-anchor":"start"});
             
         },
-        //removes complated rows and rerenders the board
+        //removes completed rows and rerenders the board
         render:function(){
             var arena = this.arena;
             var newArena = [];
             var totalscore = 0;
-            //create new arena and calculate score
+            //calculate newarena and score
             for (var i=0;i<arena.length;i++){
                 var row = arena[i];
                 if (row.every(function(x){return !x.empty;})){
@@ -113,7 +113,7 @@ var gameManager = function(){
                     newArena.push(row);
                 }
             }
-            
+            //refresh arena with newArena values
             for(var i=0;i<newArena.length;i++){
                 var valRow = newArena[i];
                 var row = arena[i];
@@ -126,7 +126,7 @@ var gameManager = function(){
                         cube.put(valCube.color);
                 }
             }
-            //empty remaining places
+            //empty remaining rows
             for(i=newArena.length;i<arena.length;i++)
                 arena[i].forEach(function(x){x.put();});
 
@@ -134,6 +134,7 @@ var gameManager = function(){
             this.refreshScore();
 
         },
+        //refresh score on the board
         refreshScore:function(){
             this.scoreText.attr("text",this.score);
         },
@@ -170,10 +171,10 @@ var gameManager = function(){
             var e = this.chooseNewNextPiece();
             var piece = {element: e,
                          cubes:e.cubes.map(function(i){return {x:i.x+7, y:i.y+23};})};
-            piece.__proto__ = pieceProto;
             current.current_piece = piece;
             this.render();
         },
+        //place current piece to given location
         placePiece:function(newCubes){
             var piece = this.current_piece;
             var orgCubes = piece.cubes;
@@ -186,7 +187,6 @@ var gameManager = function(){
                                                                          return i.x === j.x && i.y === j.y;
                                                                      }));
                                        })){
-
                 //cubes that needs to be removed
                 var rmCubes = orgCubes.filter(function(cube){
                                                   return newCubes.every(function(x){
@@ -199,7 +199,6 @@ var gameManager = function(){
                                                                            return !(x.x===cube.x && x.y ===cube.y);
                                                                        });
                                               });
-                
                 //remove cubes
                 rmCubes.forEach(function(i){
                                      if(i.y<23)
@@ -210,15 +209,14 @@ var gameManager = function(){
                                      if (i.y<23)
                                          arena[i.y][i.x].put(piece.element.color);
                                  });
-                
                 piece.cubes = newCubes;
-
                 result = true;
             }else{
                 result = false;
             }
             return result;
         },
+        //move piece by given values
         movePiece:function(x,y){
             var newCubes = this.current_piece.cubes.map(function(i){return {x:i.x+x,y:i.y+y};});
             return this.placePiece(newCubes);
@@ -229,12 +227,15 @@ var gameManager = function(){
             this.enterPiece();
             gameManager.loop();
         },//start
+        //left arrow event handler
         moveLeft:function(){
             this.movePiece(-1,0);
         },
+        //right arrow event handler
         moveRight:function(){
             this.movePiece(1,0);
         },
+        //up arrow event handler
         rotate:function(){
             var piece = this.current_piece;
             var cubes = piece.cubes;
@@ -245,16 +246,20 @@ var gameManager = function(){
                                      });
             this.placePiece(newCubes);
         },
+        //down arrow event handler
         moveDown:function(){
             this.turn();
         }
     };
 
     return {
+        //loop function that called by setTimeout Method
+        //This function creates main game loop
         loop:function(){
             current.timeInterval = setTimeout("gameManager.loop()",current.interval-current.score);
             current.turn();
         },
+        //initialize the game and return initialized game
         initialize:function(element){
             // Prepare main game object
             var game = {
@@ -285,7 +290,6 @@ var gameManager = function(){
             };//outer for
             //set newly created arena to game.arena
             game.arena = arena;
-
             //create preview arena blocks
             var preview = [];
             var previewx = dim*arenaSize + 15;
@@ -305,14 +309,12 @@ var gameManager = function(){
                 preview.push(row);
             }
             game.previewArena = preview;
-
             //put score numbers
             var scoreText = game.paper.text(gameProto.width-25,350,game.score);
             scoreText.attr({"fill":"#fff",
                                 "font-size":35,
                                 "text-anchor":"end"});
             game.scoreText = scoreText;
-            
             //set prototype of game object
             game.__proto__ = gameProto;
             game.drawBase();
@@ -322,7 +324,9 @@ var gameManager = function(){
 }();
 
 window.onload = function() {
+    //initialize a new game
     var game = gameManager.initialize(document.getElementById('canvas_container'));
+    //bind event handlers to ducument
     document.addEventListener('keydown',function(e){
                                   switch(e.keyCode){
                                   case 37://left arrow
