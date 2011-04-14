@@ -92,11 +92,28 @@ var gameManager = function(){
 			// Info Window Cover
 			var cover2 = paper.rect(arenaWidth+10,5,this.width-arenaWidth-15,this.height-10);
 			cover2.attr("stroke","#fff");
+			//next piece text
+			var nextPieceText = paper.text(arenaWidth+50,20,"Next Piece");
+			nextPieceText.attr({"fill":"#fff",
+								"font-size":15,
+							    "text-anchor":"start"});
+			
 		},
 		//removes complated rows and rerenders the board
 		render:function(){
 			var arena = this.arena;
-			var newArena = arena.filter(function(row){return row.some(function(x){return x.empty;});});
+			var newArena = [];
+			var totalscore = 0;
+			//create new arena and calculate score
+			for (var i=0;i<arena.length;i++){
+				var row = arena[i];
+				if (row.every(function(x){return !x.empty;})){
+					totalscore += i+1;
+				}else{
+					newArena.push(row);
+				}
+			}
+			
 			for(var i=0;i<newArena.length;i++){
 				var valRow = newArena[i];
 				var row = arena[i];
@@ -113,11 +130,24 @@ var gameManager = function(){
 			for(i=newArena.length;i<arena.length;i++)
 				arena[i].forEach(function(x){x.put();});
 
+			this.score +=totalscore;
+			this.refreshScore();
+
+		},
+		refreshScore:function(){
+			this.scoreText.attr("text",this.score);
 		},
 		//process one turn of the game
 		turn:function(){
-			if(!this.movePiece(0,-1))
-				this.enterPiece();
+			if(!this.movePiece(0,-1)){
+				var piece = this.current_piece;
+				if(piece.cubes.some(function(x){return x.y>=23;})){
+					clearTimeout(this.timeInterval);
+					alert('game over');
+				}else{
+					this.enterPiece();
+				}
+			}
 		},
 		//chooses next piece and returns old one back
 		chooseNewNextPiece:function(){
@@ -131,7 +161,6 @@ var gameManager = function(){
 			this.next_piece = elements[index];
 			var color = this.next_piece.color;
 			this.next_piece.cubes.forEach(function(x){
-											  console.log(x.color);
 											  previewArena[x.y+2][x.x+2].put(color);
 										  });
 			return e;
@@ -208,7 +237,7 @@ var gameManager = function(){
 
 	return {
 		loop:function(){
-			setTimeout("gameManager.loop()",500);
+			current.timeInterval = setTimeout("gameManager.loop()",current.interval-current.score);
 			current.turn();
 		},
 		initialize:function(element){
@@ -217,7 +246,9 @@ var gameManager = function(){
 				paper: new Raphael(element, gameProto.width, gameProto.height),
 				pieces:[],
 				current_piece: null,
-				next_piece:null
+				next_piece:null,
+				score:0,
+				interval:500
 			};
 			current = game;
 			//Create game arena blocks
@@ -246,8 +277,6 @@ var gameManager = function(){
 			var previewArenaSize = gameProto.previewArenaSize;
 			var previewArenaHeight = gameProto.previewArenaHeight;
 			var previewIndexStart = 5 + dim*previewArenaHeight;
-			console.log(previewIndexStart);
-			console.log(previewx);
 			for(i=0;i<previewArenaHeight;i++){
 				var row = [];
 				for(var j=0;j<previewArenaSize;j++){
@@ -261,6 +290,14 @@ var gameManager = function(){
 				preview.push(row);
 			}
 			game.previewArena = preview;
+
+			//put score numbers
+			var scoreText = game.paper.text(gameProto.width-25,350,game.score);
+			scoreText.attr({"fill":"#fff",
+								"font-size":35,
+							    "text-anchor":"end"});
+			game.scoreText = scoreText;
+			
 			//set prototype of game object
 			game.__proto__ = gameProto;
 			game.drawBase();
