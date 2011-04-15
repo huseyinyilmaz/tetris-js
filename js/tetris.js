@@ -5,54 +5,34 @@ var gameManager = function(){
     /////////////////
 
     //game piece types
-    var elements = [];
-
+    var elements = [
     //  X
     // XXX
-    elements.push({
-                      color:'#f00',
-                      cubes:[{x:0,y:0},{x:1,y:0},{x:-1,y:0},{x:0,y:1}]
-                  });
+    {color:'#f00',
+     cubes:[{x:0,y:0},{x:1,y:0},{x:-1,y:0},{x:0,y:1}]},
     // XXXX
-    elements.push({
-                      color:'#0f0',
-                      cubes:[{x:0,y:0},{x:1,y:0},{x:2,y:0},{x:-1,y:0}]
-                  });
+    {color:'#0f0',
+     cubes:[{x:0,y:0},{x:1,y:0},{x:2,y:0},{x:-1,y:0}]},
     // XX
     // XX
-    elements.push({
-                      color:'#00f',
-                      cubes:[{x:0,y:0},{x:1,y:0},{x:0,y:1},{x:1,y:1}]
-                  });
-
+    {color:'#00f',
+     cubes:[{x:0,y:0},{x:1,y:0},{x:0,y:1},{x:1,y:1}]},
     // X
     // XXX
-    elements.push({
-                      color:'#ff0',
-                      cubes:[{x:0,y:0},{x:1,y:0},{x:-1,y:0},{x:-1,y:1}]
-                  });
-
+    {color:'#ff0',
+     cubes:[{x:0,y:0},{x:1,y:0},{x:-1,y:0},{x:-1,y:1}]},
     //   X
     // XXX
-    elements.push({
-                      color:'#fff',
-                      cubes:[{x:0,y:0},{x:1,y:0},{x:-1,y:0},{x:1,y:1}]
-    
-                  });
+    {color:'#fff',
+     cubes:[{x:0,y:0},{x:1,y:0},{x:-1,y:0},{x:1,y:1}]},
     //  XX
     // XX
-    elements.push({
-                      color:'#0ff',
-                      cubes:[{x:0,y:0},{x:0,y:1},{x:1,y:1},{x:-1,y:0}]
-                  });
-
+    {color:'#0ff',
+     cubes:[{x:0,y:0},{x:0,y:1},{x:1,y:1},{x:-1,y:0}]},
     // XX
     //  XX
-    elements.push({
-                      color:'#f0f',
-                      cubes:[{x:0,y:0},{x:0,y:1},{x:-1,y:1},{x:1,y:0}]
-                  });
-
+    {color:'#f0f',
+     cubes:[{x:0,y:0},{x:0,y:1},{x:-1,y:1},{x:1,y:0}]}];
     //holds current game
     var current = null;
 
@@ -335,7 +315,6 @@ window.onload = function() {
     var game = gameManager.initialize(document.getElementById('canvas_container'));
     //bind event handlers to ducument
     document.addEventListener('keydown',function(e){
-								  console.log(e.keyCode);
                                   switch(e.keyCode){
 								case 13://enter
 									  game.moveAllDown();
