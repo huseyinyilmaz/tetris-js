@@ -84,31 +84,27 @@ var gameManager = function(){
             var arena = this.arena;
             var newArena = [];
             var totalscore = 0;
+
             //calculate newarena and score
-            for (var i=0;i<arena.length;i++){
-                var row = arena[i];
-                if (row.every(function(x){return !x.empty;})){
-                    totalscore += i+1;
-                }else{
-                    newArena.push(row);
-                }
-            }
-            //refresh arena with newArena values
-            for(var i=0;i<newArena.length;i++){
-                var valRow = newArena[i];
-                var row = arena[i];
-                for(var j=0;j<row.length;j++){
-                    var valCube=valRow[j];
-                    var cube=row[j];
-                    if (valCube.empty)
-                        cube.put();
-                    else
-                        cube.put(valCube.color);
-                }
-            }
-            //empty remaining rows
-            for(i=newArena.length;i<arena.length;i++)
-                arena[i].forEach(function(x){x.put();});
+            arena.forEach(function(row,i){
+                              if (row.every(function(x){return !x.empty;})){
+                                  totalscore += i+1;
+                              }else{
+                                  newArena.push(row);
+                              }
+                          });
+
+            newArena.forEach(function(valRow,i){
+                                 arena[i].forEach(function(cube,j){
+                                                      var valCube = valRow[j];
+                                                      if (valCube.empty)
+                                                          cube.put();
+                                                      else
+                                                          cube.put(valCube.color);
+                                                  });
+                             });
+
+            arena.slice(newArena.length).forEach(function(row){row.forEach(function(cube){cube.put();});});
 
             this.score +=totalscore;
             this.refreshScore();
@@ -120,7 +116,7 @@ var gameManager = function(){
         },
         //process one turn of the game
         turn:function(){
-			var result = true;
+            var result = true;
             if(!this.movePiece(0,-1)){
                 var piece = this.current_piece;
                 if(piece.cubes.some(function(x){return x.y>=23;})){
@@ -129,9 +125,9 @@ var gameManager = function(){
                 }else{
                     this.enterPiece();
                 }
-				result = false;
+                result = false;
             }
-			return result;
+            return result;
         },
         //chooses next piece and returns old one back
         chooseNewNextPiece:function(){
@@ -231,12 +227,12 @@ var gameManager = function(){
         },
         //down arrow event handler
         moveDown:function(){
-			this.turn();
+            this.turn();
         },
-		//enter event handler
-		moveAllDown:function(){
+        //enter event handler
+        moveAllDown:function(){
             while(this.turn());
-		}
+        }
     };
 
     return {
@@ -316,9 +312,9 @@ window.onload = function() {
     //bind event handlers to ducument
     document.addEventListener('keydown',function(e){
                                   switch(e.keyCode){
-								case 13://enter
-									  game.moveAllDown();
-									  break;
+                                case 13://enter
+                                      game.moveAllDown();
+                                      break;
                                   case 37://left arrow
                                       game.moveLeft();
                                       break;
