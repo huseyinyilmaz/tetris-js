@@ -1,5 +1,5 @@
 "use strict";
-var gameManager = function(){
+window['gameManager'] = function(){
     /////////////////
     // ELEMENTS    //
     /////////////////
