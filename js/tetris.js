@@ -42,15 +42,17 @@ var gameManager = function(){
 
         //refreshes the cube with given color
         put:function(c){
+			var dim = current.cubeDimantion;
             //if there is no color defined remove cube
             if(typeof(c) === 'undefined'){
                 c=this.emptyCubeColor;
+				current.paper.ctx.clearRect(this.x,this.y,dim,dim);
                 this.empty = true;
             }else{
                 this.empty = false;
+				current.paper.fillRect(this.x,this.y,dim,dim,c);
             }
             this.color=c;
-            this.cube.attr('fill',c);
         }
     };
 
@@ -67,17 +69,14 @@ var gameManager = function(){
             var paper = this.paper;
             var arenaWidth = gameProto.cubeDimantion * gameProto.arenaSize;
             // Game Arena Cover
-            var cover1 = paper.rect(5,5,arenaWidth,this.height-10);
-            cover1.attr("stroke","#fff");
+			paper.strokeRect(5,5,arenaWidth,this.height-10);
             // Info Window Cover
-            var cover2 = paper.rect(arenaWidth+10,5,this.width-arenaWidth-15,this.height-10);
-            cover2.attr("stroke","#fff");
+            paper.strokeRect(arenaWidth+10,5,this.width-arenaWidth-15,this.height-10);
             //next piece text
-            var nextPieceText = paper.text(arenaWidth+50,20,"Next Piece");
-            nextPieceText.attr({"fill":"#fff",
-                                "font-size":15,
-                                "text-anchor":"start"});
-            
+			paper.ctx.textAlign = 'left';
+			paper.fillText('NextPiece',arenaWidth+25,30);
+			paper.ctx.textAlign = 'end';
+
         },
         //removes completed rows and rerenders the board
         render:function(){
@@ -112,7 +111,7 @@ var gameManager = function(){
         },
         //refresh score on the board
         refreshScore:function(){
-            this.scoreText.attr("text",this.score);
+            this.putScore(this.score);
         },
         //process one turn of the game
         turn:function(){
@@ -245,13 +244,40 @@ var gameManager = function(){
         //initialize the game and return initialized game
         initialize:function(element){
             // Prepare main game object
+			var paper = {
+				ctx:element.getContext('2d'),
+				strokeRect:function(x,y,width,height){
+					var ctx = this.ctx;
+					ctx.strokeStyle = '#fff';
+					ctx.lineWidth   = 1;
+					ctx.strokeRect(x,y,width,height);
+				},//strokeRect
+				fillText:function(st,x,y){
+					var ctx = this.ctx;
+					ctx.fillStyle = '#fff';
+					ctx.fillText(st,x,y);
+				},//fillText
+				fillRect:function(x,y,width,height,color){
+					var ctx = this.ctx;
+					ctx.fillStyle = color;
+					ctx.fillRect(x,y,width,height);
+				}
+			};
+			var putScore = function(s){
+				paper.fillText(s,gameProto.width-25,350);
+			};
+
+			paper.ctx.font = "20pt Arial";
+			paper.ctx.textAlign = 'end';
+
             var game = {
-                paper: new Raphael(element, gameProto.width, gameProto.height),
+                paper:paper,
                 pieces:[],
                 current_piece: null,
                 next_piece:null,
                 score:0,
-                interval:500
+                interval:500,
+				putScore:putScore
             };
             current = game;
             //Create game arena blocks
@@ -264,8 +290,8 @@ var gameManager = function(){
                 for(var j = 0;j<arenaSize;j++){
                     var cube ={empty:true,
                                color:null,
-                               cube:game.paper.rect(j*dim+5,indexStart-i*dim,dim,dim)
-                               };
+							   x:j*dim+5,
+							   y:indexStart-i*dim};
                     cube.__proto__ = cubeProto;
                     row.push(cube);
                 };//inner for
@@ -284,8 +310,8 @@ var gameManager = function(){
                 for(var j=0;j<previewArenaSize;j++){
                     var cube = {empty:true,
                                 color:null,
-                                cube:game.paper.rect(j*dim+5+previewx,previewIndexStart-i*dim,dim,dim)
-                               };
+								x:j*dim+5+previewx,
+								y:previewIndexStart-i*dim};
                     cube.__proto__ = cubeProto;
                     row.push(cube);
                 }
@@ -293,11 +319,8 @@ var gameManager = function(){
             }
             game.previewArena = preview;
             //put score numbers
-            var scoreText = game.paper.text(gameProto.width-25,350,game.score);
-            scoreText.attr({"fill":"#fff",
-                                "font-size":35,
-                                "text-anchor":"end"});
-            game.scoreText = scoreText;
+            game.putScore(game.score);
+
             //set prototype of game object
             game.__proto__ = gameProto;
             game.drawBase();
@@ -308,7 +331,7 @@ var gameManager = function(){
 
 window.onload = function() {
     //initialize a new game
-    var game = gameManager.initialize(document.getElementById('canvas_container'));
+    var game = gameManager.initialize(document.getElementById('c'));
     //bind event handlers to ducument
     document.addEventListener('keydown',function(e){
                                   switch(e.keyCode){
