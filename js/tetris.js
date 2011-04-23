@@ -1,5 +1,5 @@
 "use strict";
-window['gameManager'] = function(){
+window['g'] = function(){
     /////////////////
     // ELEMENTS    //
     /////////////////
@@ -8,30 +8,30 @@ window['gameManager'] = function(){
     var elements = [
     //  X
     // XXX
-    {color:'#f00',
+    {c:'#f00',
      cubes:[{x:0,y:0},{x:1,y:0},{x:-1,y:0},{x:0,y:1}]},
     // XXXX
-    {color:'#0f0',
+    {c:'#0f0',
      cubes:[{x:0,y:0},{x:1,y:0},{x:2,y:0},{x:-1,y:0}]},
     // XX
     // XX
-    {color:'#00f',
+    {c:'#00f',
      cubes:[{x:0,y:0},{x:1,y:0},{x:0,y:1},{x:1,y:1}]},
     // X
     // XXX
-    {color:'#ff0',
+    {c:'#ff0',
      cubes:[{x:0,y:0},{x:1,y:0},{x:-1,y:0},{x:-1,y:1}]},
     //   X
     // XXX
-    {color:'#fff',
+    {c:'#fff',
      cubes:[{x:0,y:0},{x:1,y:0},{x:-1,y:0},{x:1,y:1}]},
     //  XX
     // XX
-    {color:'#0ff',
+    {c:'#0ff',
      cubes:[{x:0,y:0},{x:0,y:1},{x:1,y:1},{x:-1,y:0}]},
     // XX
     //  XX
-    {color:'#f0f',
+    {c:'#f0f',
      cubes:[{x:0,y:0},{x:0,y:1},{x:-1,y:1},{x:1,y:0}]}];
     //holds current game
     var current = null;
@@ -50,9 +50,9 @@ window['gameManager'] = function(){
                 this.empty = true;
             }else{
                 this.empty = false;
-                current.paper.fillRect(this.x,this.y,dim,dim,c);
+                current.paper.fr(this.x,this.y,dim,dim,c);
             }
-            this.color=c;
+            this.c=c;
         }
     };
 
@@ -69,12 +69,12 @@ window['gameManager'] = function(){
             var paper = this.paper;
             var arenaWidth = gameProto.cubeDimantion * gameProto.arenaSize;
             // Game Arena Cover
-            paper.strokeRect(5,5,arenaWidth,this.height-10);
+            paper.sr(5,5,arenaWidth,this.height-10);
             // Info Window Cover
-            paper.strokeRect(arenaWidth+10,5,this.width-arenaWidth-15,this.height-10);
+            paper.sr(arenaWidth+10,5,this.width-arenaWidth-15,this.height-10);
             //next piece text
             paper.ctx.textAlign = 'left';
-            paper.fillText('NextPiece',arenaWidth+25,30);
+            paper.ft('NextPiece',arenaWidth+25,30);
             paper.ctx.textAlign = 'end';
 
         },
@@ -99,7 +99,7 @@ window['gameManager'] = function(){
                                                       if (valCube.empty)
                                                           cube.put();
                                                       else
-                                                          cube.put(valCube.color);
+                                                          cube.put(valCube.c);
                                                   });
                              });
 
@@ -138,7 +138,7 @@ window['gameManager'] = function(){
                                     previewArena[x.y+2][x.x+2].put();
                                 });
             this.next_piece = elements[index];
-            var color = this.next_piece.color;
+            var color = this.next_piece.c;
             this.next_piece.cubes.forEach(function(x){
                                               previewArena[x.y+2][x.x+2].put(color);
                                           });
@@ -185,7 +185,7 @@ window['gameManager'] = function(){
                 //add cubes
                 addCubes.forEach(function(i){
                                      if (i.y<23)
-                                         arena[i.y][i.x].put(piece.element.color);
+                                         arena[i.y][i.x].put(piece.element.c);
                                  });
                 piece.cubes = newCubes;
                 result = true;
@@ -200,10 +200,10 @@ window['gameManager'] = function(){
             return this.placePiece(newCubes);
         },
         //start game
-        start:function(){
+        s:function(){
             this.chooseNewNextPiece();
             this.enterPiece();
-            gameManager.loop();
+            g.loop();
         },//start
         //left arrow event handler
         moveLeft:function(){
@@ -238,7 +238,7 @@ window['gameManager'] = function(){
         //loop function that called by setTimeout Method
         //This function creates main game loop
         loop:function(){
-            current.timeInterval = setTimeout("gameManager.loop()",current.interval-current.score);
+            current.timeInterval = setTimeout("g.loop()",current.interval-current.score);
             current.turn();
         },
         //initialize the game and return initialized game
@@ -246,25 +246,25 @@ window['gameManager'] = function(){
             // Prepare main game object
             var paper = {
                 ctx:element.getContext('2d'),
-                strokeRect:function(x,y,width,height){
+                sr:function(x,y,width,height){
                     var ctx = this.ctx;
                     ctx.strokeStyle = '#fff';
                     ctx.lineWidth   = 1;
                     ctx.strokeRect(x,y,width,height);
                 },//strokeRect
-                fillText:function(st,x,y){
+                ft:function(st,x,y){
                     var ctx = this.ctx;
                     ctx.fillStyle = '#fff';
                     ctx.fillText(st,x,y);
                 },//fillText
-                fillRect:function(x,y,width,height,color){
+                fr:function(x,y,width,height,color){
                     var ctx = this.ctx;
                     ctx.fillStyle = color;
                     ctx.fillRect(x,y,width,height);
                 }
             };
             var putScore = function(s){
-                paper.fillText(s,gameProto.width-25,350);
+                paper.ft(s,gameProto.width-25,350);
             };
 
             paper.ctx.font = "20pt Arial";
@@ -331,7 +331,7 @@ window['gameManager'] = function(){
 
 window.onload = function() {
     //initialize a new game
-    var game = gameManager.initialize(document.getElementById('c'));
+    var game = g.initialize(document.getElementById('c'));
     //bind event handlers to ducument
     document.addEventListener('keydown',function(e){
                                   switch(e.keyCode){
@@ -351,5 +351,5 @@ window.onload = function() {
                                       game.moveDown();
                                       break;
                                   }; },false);
-    game.start();
+    game.s();
 };
