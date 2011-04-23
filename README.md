@@ -8,4 +8,4 @@ full source code version is
 * Implementation is done in ES5 strict mode. So ES5 compatible browser is required to run the game.
 
 Full source code with comments is 13K. 
-Minified version is 3.6K.
+Minified version is 3.5K.
