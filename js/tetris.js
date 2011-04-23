@@ -68,6 +68,9 @@ window['gameManager'] = function(){
         drawBase:function(){
             var paper = this.paper;
             var arenaWidth = gameProto.cubeDimantion * gameProto.arenaSize;
+			//x axis of info area
+			this.infox = arenaWidth+15;
+			this.infowidth = this.width-arenaWidth-25;
             // Game Arena Cover
             paper.strokeRect(5,5,arenaWidth,this.height-10);
             // Info Window Cover
@@ -264,6 +267,7 @@ window['gameManager'] = function(){
                 }
             };
             var putScore = function(s){
+                current.paper.ctx.clearRect(this.infox, 320, this.infowidth, 40);
                 paper.fillText(s,gameProto.width-25,350);
             };
 
@@ -318,13 +322,15 @@ window['gameManager'] = function(){
                 preview.push(row);
             }
             game.previewArena = preview;
-            //put score numbers
-            game.putScore(game.score);
-
+  
             //set prototype of game object
             game.__proto__ = gameProto;
             game.drawBase();
-            return game;
+
+			//put score numbers
+            game.putScore(game.score);
+
+			return game;
         }//initialize
     };//returned object
 }();
